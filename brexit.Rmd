@@ -1,12 +1,14 @@
 ---
 title: "Brexit"
-author: "You!"
+author: "Tiffani Hill"
 date: "`r Sys.Date()`"
 output: html_document
 ---
 
 ```{r load-packages, message = FALSE, echo = FALSE}
 library(tidyverse)
+library(scales)
+library(dplyr)
 ```
 
 In September 2019, YouGov survey asked 1,639 GB adults the following question:
@@ -57,15 +59,16 @@ In this application exercise, let's tell a different story with the same data.
 Add `scales = "free_x"` as an argument to the `facet_wrap()` function.
 
 How does the visualisation change?
-
+The scales are different for each country.
 How is the story this visualisation telling different than the story the original plot tells?
+This gives the false illusion that each country has a similar amount of people that that the brexit was wrong.
 
 ```{r}
 ggplot(brexit, aes(y = opinion, fill = opinion)) +
   geom_bar() +
   facet_wrap(~region,
     nrow = 1, labeller = label_wrap_gen(width = 12),
-    # ___
+    scales = "free_x"
   ) +
   guides(fill = FALSE) +
   labs(
@@ -86,17 +89,61 @@ ggplot(brexit, aes(y = opinion, fill = opinion)) +
 
 First, calculate the proportion of wrong, right, and don't know answers in each category and then plot these proportions (rather than the counts) and then improve axis labeling.
 How is the story this visualisation telling different than the story the original plot tells?
+
+The graph looks a bit wonky. It basically shows that each country had similar opinions about Britian leaving the EU.
 **Hint:** You'll need the **scales** package to improve axis labeling, which means you'll need to load it on top of the document as well.
 
 ```{r}
-# code goes here
+prop <- brexit %>% 
+  count(region, opinion) %>% 
+  group_by(region) %>% 
+  mutate(prop = n/ sum(n)) %>% 
+  ungroup()
+
+ggplot(prop, aes(y = prop, fill = opinion)) +
+  geom_bar()+#position = "fill") +
+  ###facet_wrap(~region, nrow = 1, labeller = label_wrap_gen(width = 12))+
+  guides(fill = FALSE) +
+  labs(
+    title = "Was Britain right/wrong to vote to leave EU?",
+    subtitle = "YouGov Survey Results, 2-3 September 2019",
+    caption = "Source: bit.ly/2lCJZVg",
+    x = NULL, y = NULL
+  ) +
+  scale_fill_manual(values = c(
+    "Wrong" = "#ef8a62",
+    "Right" = "#67a9cf",
+    "Don't know" = "gray"
+  )) +
+  theme_minimal()
+  
+
+
+       
 ```
 
 ### Exercise 3 - Comparing proportions across bars
 
 Recreate the same visualisation from the previous exercise, this time dodging the bars for opinion proportions for each region, rather than faceting by region and then improve the legend.
 How is the story this visualisation telling different than the story the previous plot tells?
+This visualisation does a better job showing difference between countries. Here, it shows clear differences between opinions based on country. However, it appears that more people were surveyed in certain countries than in others. For example, the Rest of the South seems to be split pretty much in half. 
 
 ```{r}
-# code goes here
+ggplot(brexit, aes(y = opinion, fill = opinion)) +
+  geom_bar(position = "dodge") +
+  facet_wrap(~region, nrow = 1, labeller = label_wrap_gen(width = 12)
+  ) +
+  guides(fill = FALSE) +
+  labs(
+    title = "Was Britain right/wrong to vote to leave EU?",
+    subtitle = "YouGov Survey Results, 2-3 September 2019",
+    caption = "Source: bit.ly/2lCJZVg",
+    x = NULL, y = NULL
+  ) +
+  scale_fill_manual(values = c(
+    "Wrong" = "#ef8a62",
+    "Right" = "#67a9cf",
+    "Don't know" = "gray"
+  )) +
+  theme_minimal()
 ```
